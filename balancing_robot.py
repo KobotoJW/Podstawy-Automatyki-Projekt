@@ -3,13 +3,6 @@ from math import sin
 from math import pi
 
 class BalancingRobot:
-    """
-        The mathematical model is from: 
-            'A comparison of Controllers for Balancing Two Wheeled Inverted 
-            Pendulum Robot', Amir A. Bature, Salinda Buyamin, Mohammed N. Ahmad,
-            Mustapha Muhammad.
-    """
-
     def __init__(self):
         # variables for the model
         self.Mb = None  # kg      mass of main body (pendulum)
@@ -27,13 +20,9 @@ class BalancingRobot:
         self.xp = None     # linear x speed of the robot
         self.xpp = None    # linear x acceleration of the robot
 
-        self.initRobot()  # to initialize all the parameters of the system
+        self.initRobot()
 
     def initRobot(self):
-        """
-            The values here are the value from the paper.
-        """
-        # variables for the model
         self.Mb = 13.3    # kg      mass of main body (pendulum)
         self.Mw = 1.5     # kg      mass of wheels
         self.d = 0.03     # m       center of mass from base
@@ -51,8 +40,6 @@ class BalancingRobot:
         """ Function to evaluate the new state of the system:
             phi, phip, x, xp
         """
-
-        # to ease the reading
         Mb = self.Mb
         Mw = self.Mw
         d  = self.d
