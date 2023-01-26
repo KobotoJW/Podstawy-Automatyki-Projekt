@@ -9,7 +9,7 @@ controller.setPoint(robot.phi)
 
 deltat = 0.01  # time step
 t = 0  # initial time
-tf = 20  # final time
+tf = 15  # final time
 
 time = []
 angle = []
@@ -18,10 +18,10 @@ robot_speed = []
 setpoint_data = []
 
 robot = BalancingRobot()
-controller = PID(P=12, I=0, D=100, Derivator=0, Integrator=0, Integrator_max=3, Integrator_min=-3, Kp_speed = 0)
+controller = PID(P=12, I=-0.1, D=80)
 
 # set the setpoint for the PID controller
-controller.setPoint(0)
+controller.setPoint(robot.phi)
 
 speed_sum = 0
 
@@ -33,8 +33,6 @@ while t < tf:
     setpoint_data.append(controller.getPoint())
     # update the PID controller with the current angle
     control_input = controller.update(current_angle)
-    speed_sum += robot.xp
-    control_input += -controller.Kp_speed*speed_sum
 
     # use the f() method to update the robot's state
     phip, phipp, xpp, xp = robot.f(robot.phi, robot.phip, robot.x, robot.xp, deltat, control_input)
