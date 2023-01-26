@@ -8,17 +8,17 @@ class BalancingRobot:
         self.Mb = None  # kg      mass of main body (pendulum)
         self.Mw = None  # kg      mass of wheels
         self.d = None   # m       center of mass from base
-        self.Ix = None  # kg.m^2  Moment of inertia of body x-axis
+        self.Ix = None  # kg.m^2  Moment of inertia of body robot_position-axis
         self.Iz = None  # kg.m^2  Moment of inertia of body z-axis
         self.g = None   # m/s^2   Acceleration due to gravity
 
         # variables for dynamic evaluation
-        self.phi = None    # angle of the pendulum
-        self.phip = None   # angular speed of the pendulum
-        self.phipp = None  # angular acceleration of the pendulum
-        self.x = None      # x position of the robot
-        self.xp = None     # linear x speed of the robot
-        self.xpp = None    # linear x acceleration of the robot
+        self.body_angle = None    # angle of the pendulum
+        self.body_angle_speed = None   # angular speed of the pendulum
+        self.body_angle_acceleration = None  # angular acceleration of the pendulum
+        self.robot_position = None      # robot_position position of the robot
+        self.robot_speed = None     # speed of the robot
+        self.robot_acceleration = None    # acceleration of the robot
 
         self.initRobot()
 
@@ -26,19 +26,20 @@ class BalancingRobot:
         self.Mb = 13.3    # kg      mass of main body (pendulum)
         self.Mw = 1.5     # kg      mass of wheels
         self.d = 0.03     # m       center of mass from base
-        self.Ix = 0.1935  # kg.m^2  Moment of inertia of body x-axis
+        self.Ix = 0.1935  # kg.m^2  Moment of inertia of body robot_position-axis
         self.Iz = 0.3379  # kg.m^2  Moment of inertia of body z-axis
         self.g = 9.81     # m/s^2   Acceleration due to gravity  
 
-        self.phi = 2*pi/180  # the pendulum is initially unstable 
-        self.phip = 0
+        self.body_angle = 2*pi/180  # the pendulum is initially unstable 
+        self.body_angle_speed = 0
 
-        self.x = 0
-        self.xp = 0
+        self.robot_position = 0
+        self.robot_speed = 0
+        self.robot_acceleration = 0
 
-    def f(self, phi, phip, x, xp, deltat, tau):
+    def f(self, body_angle, body_angle_speed, robot_position, robot_speed, deltat, tau):
         """ Function to evaluate the new state of the system:
-            phi, phip, x, xp
+            body_angle, body_angle_speed, robot_position, robot_speed, robot_acceleration
         """
         Mb = self.Mb
         Mw = self.Mw
@@ -47,18 +48,36 @@ class BalancingRobot:
         Iz = self.Iz
         g  = self.g
 
+
         # mathematical model
-        phipp = (tau - (Mb*d*g*sin(phi) + Ix*phip*phip*sin(phi)*cos(phi)))/(Iz - Ix*sin(phi)*sin(phi))
-        xpp = (2*tau - (2*Mb*d*g*sin(phi) + 2*Ix*phip*phip*sin(phi)*cos(phi)))/(2*Mw + 2*Mb)
-        
-        self.phi = phi + phip*deltat + phipp*deltat*deltat/2
-        self.phip = phip + phipp*deltat
-        self.x = x + xp*deltat + xpp*deltat*deltat/2
-        self.xp = xp + xpp*deltat
-        return self.phi, self.phip, self.x, self.xp
+        self.body_angle_acceleration = (tau - (Mb*d*g*sin(body_angle) + Ix*body_angle_speed*body_angle_speed*sin(body_angle)*cos(body_angle)))/(Iz - Ix*sin(body_angle)*sin(body_angle))
+        self.robot_acceleration = (tau - (Mb*d*g*sin(body_angle) + Ix*body_angle_speed*body_angle_speed*sin(body_angle)*cos(body_angle)))/(Mw + Mb)
+        if self.robot_acceleration > 0:
+            self.robot_acceleration = min(self.robot_acceleration, 1)
+        else:
+            self.robot_acceleration = max(self.robot_acceleration, -1)
+        '''
+        if self.robot_acceleration > 0 and self.robot_acceleration < 0.05:
+            self.robot_acceleration = 0.05
+        if self.robot_acceleration < 0 and self.robot_acceleration > -0.05:
+            self.robot_acceleration = -0.05
+        '''
+        if self.robot_speed >= 20:
+            self.robot_acceleration = min(self.robot_acceleration, 0)
+
+        self.body_angle = body_angle + body_angle_speed*deltat + self.body_angle_acceleration*deltat*deltat/2
+        self.body_angle_speed = body_angle_speed + self.body_angle_acceleration*deltat
+        self.robot_position = robot_position + robot_speed*deltat + self.robot_acceleration*deltat*deltat/2
+        self.robot_speed = robot_speed + self.robot_acceleration*deltat
+        if self.robot_speed > 0:
+            self.robot_speed = min(self.robot_speed, 20)
+        else:
+            self.robot_speed = max(self.robot_speed, -20)
+
+        return self.body_angle, self.body_angle_speed, self.robot_position, self.robot_speed, self.robot_acceleration
 
     def is_downed(self):
-        if abs(self.phi) > pi/4:
+        if abs(self.body_angle) > pi/4:
             return True
         else:
             return False
@@ -67,5 +86,5 @@ class BalancingRobot:
     def dynamics(self, deltat, tau):
         """ Function to evaluate the new state of the system:
         """
-        self.f(self.phi, self.phip, self.x, self.xp, deltat, tau)
+        self.f(self.body_angle, self.body_angle_speed, self.robot_position, self.robot_speed, deltat, tau)
 
