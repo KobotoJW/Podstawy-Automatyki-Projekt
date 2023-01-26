@@ -1,7 +1,7 @@
 # Podstawy-Automatyki-Projekt
-This project is a simulation of a two-wheeled inverted pendulum robot using Python. The project includes a mathematical model of the robot's dynamics and a Proportional-Integral-Derivative (PID) controller for controlling its motion. The simulation runs in real-time and plots the robot's angle and speed relative to the ground.
+This project is a simulation of a two-wheeled inverted pendulum robot using Python. The project includes a mathematical model of the robot's dynamics and a Proportional-Integral-Derivative (PID) controller for controlling its motion. The simulation plots the robot's angle and speed relative to the ground.
 
-To run the simulation, you need to have Python 3 and the following packag installed:
+To run the simulation, you need to have Python 3 and the following package installed:
 matplotlib;
 
 The main file to run the simulation is "main.py". Before running the file, you can adjust the simulation parameters such as the duration of the simulation and the PID controller gains in the same file.
